@@ -7,10 +7,6 @@
 
 import Foundation
 
-struct DataResponse: Decodable {
-    let response: DataResponseModel?
-}
-
 struct DataResponseModel: Decodable {
     let weather: [Weather]?
     let main: Main?

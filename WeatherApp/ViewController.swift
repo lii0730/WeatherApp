@@ -24,14 +24,12 @@ class ViewController: UIViewController {
     }
     
     @IBAction func clickWeatherLoadButton(_ sender: UIButton) {
-        // Data 불러와서 파싱해주면 되겠네?
-        // Data 모델을 정의하는게 낫겟네?
-        
         settingUrlSessionAndDataParsing()
     }
     
     private func settingUrlSessionAndDataParsing() {
         
+        //MARK: URLSession Setting
         let config = URLSessionConfiguration.default
         let session: URLSession = URLSession(configuration: config)
         
@@ -50,28 +48,39 @@ class ViewController: UIViewController {
             fatalError("invalid requestURL")
         }
         
-        let dataTask = session.dataTask(with: requestURL) { data, response, error in
+        // MARK: Data Task
+        let dataTask = session.dataTask(with: requestURL) { [weak self] data, response, error in
+            guard let self = self else { return }
             guard let responseData = data else { return }
             guard let responseStatus = (response as? HTTPURLResponse)?.statusCode else { return }
-            if responseStatus >= 200 && responseStatus < 300 {
-                do {
-                    let decoder = JSONDecoder()
+            
+            let decoder = JSONDecoder()
+            do {
+                if responseStatus >= 200 && responseStatus < 300 && error == nil {
                     let weatherResponse = try decoder.decode(DataResponseModel.self, from: responseData)
+                    
+                    //MARK: Parsing Data
                     self.ParsingData(model: weatherResponse)
-                } catch let error {
-                    DispatchQueue.main.async {
-                        let alert = UIAlertController.init(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
-                        
-                        let dismissButton = UIAlertAction(title: "OK", style: .default, handler: { _ in
-                        })
-                        alert.addAction(dismissButton)
-                        self.present(alert, animated: false, completion: nil)
+                } else {
+                    //MARK: Display Error Alert
+                    let errorMessage = try? decoder.decode(ErrorMessage.self, from: responseData)
+                    if let message = errorMessage?.message {
+                        DispatchQueue.main.async {
+                            let alert = UIAlertController.init(title: "Error", message: "\(message)", preferredStyle: .alert)
+                            
+                            let dismissButton = UIAlertAction(title: "OK", style: .default, handler: { _ in
+                            })
+                            alert.addAction(dismissButton)
+                            self.present(alert, animated: false, completion: nil)
+                        }
                     }
                 }
-            } else {
-                //MARK: 에러시 alert 표시
+            }
+            catch let error {
+                
+                //MARK: Display Error Alert
                 DispatchQueue.main.async {
-                    let alert = UIAlertController.init(title: "에러", message: "\(self.userInputTextField.text!)의 날씨를 불러올 수 없습니다.", preferredStyle: .alert)
+                    let alert = UIAlertController.init(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
                     
                     let dismissButton = UIAlertAction(title: "OK", style: .default, handler: { _ in
                     })

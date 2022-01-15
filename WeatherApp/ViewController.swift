@@ -65,28 +65,14 @@ class ViewController: UIViewController {
                     //MARK: Display Error Alert
                     let errorMessage = try? decoder.decode(ErrorMessage.self, from: responseData)
                     if let message = errorMessage?.message {
-                        DispatchQueue.main.async {
-                            let alert = UIAlertController.init(title: "Error", message: "\(message)", preferredStyle: .alert)
-                            
-                            let dismissButton = UIAlertAction(title: "OK", style: .default, handler: { _ in
-                            })
-                            alert.addAction(dismissButton)
-                            self.present(alert, animated: false, completion: nil)
-                        }
+                        self.showAlert(message: message)
                     }
                 }
             }
             catch let error {
                 
                 //MARK: Display Error Alert
-                DispatchQueue.main.async {
-                    let alert = UIAlertController.init(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
-                    
-                    let dismissButton = UIAlertAction(title: "OK", style: .default, handler: { _ in
-                    })
-                    alert.addAction(dismissButton)
-                    self.present(alert, animated: false, completion: nil)
-                }
+                self.showAlert(message: error.localizedDescription)
             }
         }
         dataTask.resume()
@@ -104,6 +90,17 @@ class ViewController: UIViewController {
             self.minTemperatureLabel.text = "\(temp_min) ℃"
             self.highTemperatureLabel.text = "\(temp_max) ℃"
             self.weatherDataStackView.isHidden = false
+        }
+    }
+    
+    private func showAlert(message: String) {
+        DispatchQueue.main.async {
+            let alert = UIAlertController.init(title: "Error", message: message, preferredStyle: .alert)
+            
+            let dismissButton = UIAlertAction(title: "OK", style: .default, handler: { _ in
+            })
+            alert.addAction(dismissButton)
+            self.present(alert, animated: false, completion: nil)
         }
     }
 }
